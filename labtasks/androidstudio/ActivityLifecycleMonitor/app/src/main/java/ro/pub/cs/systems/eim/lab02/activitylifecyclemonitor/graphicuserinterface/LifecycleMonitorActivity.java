@@ -1,7 +1,7 @@
 package ro.pub.cs.systems.eim.lab02.activitylifecyclemonitor.graphicuserinterface;
 
-import android.app.ActionBar.LayoutParams;
 import android.annotation.SuppressLint;
+import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.PopupWindow;
+
 import ro.pub.cs.systems.eim.lab02.activitylifecyclemonitor.R;
 import ro.pub.cs.systems.eim.lab02.activitylifecyclemonitor.general.Constants;
 import ro.pub.cs.systems.eim.lab02.activitylifecyclemonitor.general.Utilities;
@@ -22,54 +23,102 @@ public class LifecycleMonitorActivity extends Activity {
 
     private ButtonClickListener buttonClickListener = new ButtonClickListener();
 
-    private class ButtonClickListener implements Button.OnClickListener {
-
-        @Override
-        @SuppressLint("InflateParams")
-        public void onClick(View view) {
-            EditText usernameEditText = (EditText)findViewById(R.id.username_edit_text);
-            EditText passwordEditText = (EditText)findViewById(R.id.password_edit_text);
-
-            if(((Button)view).getText().toString().equals(getResources().getString(R.string.ok_button_content))) {
-                LayoutInflater layoutInflater = (LayoutInflater)getBaseContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-                String username = usernameEditText.getText().toString();
-                String password = passwordEditText.getText().toString();
-                View popupContent = null;
-                if (Utilities.allowAccess(getApplicationContext(), username, password)) {
-                    popupContent = layoutInflater.inflate(R.layout.popup_window_authentication_success, null);
-                } else {
-                    popupContent = layoutInflater.inflate(R.layout.popup_window_authentication_fail, null);
-                }
-                final PopupWindow popupWindow = new PopupWindow(popupContent, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-                Button dismissButton = (Button)popupContent.findViewById(R.id.dismiss_button);
-                dismissButton.setOnClickListener(new Button.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        popupWindow.dismiss();
-                    }
-                });
-                popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
-            }
-
-            if(((Button)view).getText().toString().equals(getResources().getString(R.string.cancel_button_content))) {
-                usernameEditText.setText(getResources().getString(R.string.empty));
-                passwordEditText.setText(getResources().getString(R.string.empty));
-            }
-        }
-
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lifecycle_monitor);
 
-        Button okButton = (Button)findViewById(R.id.ok_button);
+        Button okButton = (Button) findViewById(R.id.ok_button);
         okButton.setOnClickListener(buttonClickListener);
-        Button cancelButton = (Button)findViewById(R.id.cancel_button);
+        Button cancelButton = (Button) findViewById(R.id.cancel_button);
         cancelButton.setOnClickListener(buttonClickListener);
 
-        Log.d(Constants.TAG, "onCreate() method was invoked");
+
+        //Să se modifice mesajul din metoda onCreate(), astfel încât să se indice dacă activitatea a mai fost lansată
+        //în execuție anterior sau nu (dacă există o stare a activității care trebuie restaurată).
+        if (savedInstanceState != null) {
+            Log.d(Constants.TAG, "onCreate method was invoked, activity started before");
+        } else
+            Log.d(Constants.TAG, "onStart method was invoked");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(Constants.TAG, "onStart method was invoked");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(Constants.TAG, "onResume method was invoked");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(Constants.TAG, "onPause method was invoked");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(Constants.TAG, "onStop method was invoked");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(Constants.TAG, "onDestroy method was invoked");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d(Constants.TAG, "onRestart method was invoked");
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+
+        EditText usernameEditText = (EditText) findViewById(R.id.username_edit_text);
+        EditText passwordEditText = (EditText) findViewById(R.id.password_edit_text);
+        CheckBox rememberMeCheckbox = (CheckBox) findViewById(R.id.remember_me_checkbox);
+
+        Log.i(Constants.TAG, "onSaveInstanceState->username= " + usernameEditText.getText().toString());
+        Log.i(Constants.TAG, "onSaveInstanceState->password= " + passwordEditText.getText().toString());
+        Log.i(Constants.TAG, "onSaveInstanceState->checkbox= " + rememberMeCheckbox.isChecked());
+
+        if (rememberMeCheckbox.isChecked()) {
+            savedInstanceState.putString(Constants.USERNAME_EDIT_TEXT, usernameEditText.getText().toString());
+            savedInstanceState.putString(Constants.PASSWORD_EDIT_TEXT, passwordEditText.getText().toString());
+            savedInstanceState.putBoolean(Constants.REMEMBER_ME_CHECKBOX, rememberMeCheckbox.isChecked());
+        }
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        EditText usernameEditText = (EditText) findViewById(R.id.username_edit_text);
+        EditText passwordEditText = (EditText) findViewById(R.id.password_edit_text);
+        CheckBox rememberMeCheckbox = (CheckBox) findViewById(R.id.remember_me_checkbox);
+
+        Log.i(Constants.TAG, "onSaveInstanceState->username= " + savedInstanceState.getString(Constants.USERNAME_EDIT_TEXT));
+        Log.i(Constants.TAG, "onSaveInstanceState->password= " + savedInstanceState.getString(Constants.PASSWORD_EDIT_TEXT));
+        Log.i(Constants.TAG, "onSaveInstanceState->checkbox= " + savedInstanceState.getBoolean(Constants.REMEMBER_ME_CHECKBOX));
+
+        if (savedInstanceState.getBoolean(Constants.REMEMBER_ME_CHECKBOX)) {
+            if (savedInstanceState.getString(Constants.USERNAME_EDIT_TEXT) != null) {
+                usernameEditText.setText(savedInstanceState.getString(Constants.USERNAME_EDIT_TEXT));
+            }
+            if (savedInstanceState.getString(Constants.PASSWORD_EDIT_TEXT) != null) {
+                passwordEditText.setText(savedInstanceState.getString(Constants.PASSWORD_EDIT_TEXT));
+            }
+            rememberMeCheckbox.setChecked(true);
+        }
+
     }
 
     @Override
@@ -89,5 +138,42 @@ public class LifecycleMonitorActivity extends Activity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private class ButtonClickListener implements Button.OnClickListener {
+
+        @Override
+        @SuppressLint("InflateParams")
+        public void onClick(View view) {
+            EditText usernameEditText = (EditText) findViewById(R.id.username_edit_text);
+            EditText passwordEditText = (EditText) findViewById(R.id.password_edit_text);
+
+            if (((Button) view).getText().toString().equals(getResources().getString(R.string.ok_button_content))) {
+                LayoutInflater layoutInflater = (LayoutInflater) getBaseContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+                String username = usernameEditText.getText().toString();
+                String password = passwordEditText.getText().toString();
+                View popupContent;
+                if (Utilities.allowAccess(getApplicationContext(), username, password)) {
+                    popupContent = layoutInflater.inflate(R.layout.popup_window_authentication_success, null);
+                } else {
+                    popupContent = layoutInflater.inflate(R.layout.popup_window_authentication_fail, null);
+                }
+                final PopupWindow popupWindow = new PopupWindow(popupContent, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+                Button dismissButton = (Button) popupContent.findViewById(R.id.dismiss_button);
+                dismissButton.setOnClickListener(new Button.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        popupWindow.dismiss();
+                    }
+                });
+                popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+            }
+
+            if (((Button) view).getText().toString().equals(getResources().getString(R.string.cancel_button_content))) {
+                usernameEditText.setText(getResources().getString(R.string.empty));
+                passwordEditText.setText(getResources().getString(R.string.empty));
+            }
+        }
+
     }
 }
